@@ -2109,7 +2109,7 @@ would also have been echoed in the container.
 mounts were specified with the `--volume` option. This diverged when volumes
 became first class Docker citizens, which is when `--mount` was introduced.
 Whilst you *can* attach a bind mount to a container using `--volume`, it is
-not recommended for those starting Docker, as it reinforces legacy behaviour.
+not recommended for those starting Docker, as it reinforces legacy behavior.
 Try to only use `--mount` for bind and volume mounts (and just `--volume` for
 Docker volumes if really required). Another important note is that a directory
 or file used for bind mounting must exist prior to the mount occuring.
@@ -2406,7 +2406,7 @@ ones that you can run yourself. We'll discuss this in a future Masterclass.
 We discussed tags in a previous section, where we noted that tags that we give
 images are of the format `repository:tag`. A repository name denotes a specific
 location in a registry for a group of images. On Docker Hub, repositories are
-usually denoted by the name of a user or organisation using the registry and
+usually denoted by the name of a user or organization using the registry and
 then the repository name itself, these being split by the use of a forward slash
 (`/`). For example, the base image we were using was a balena image, in the
 repository where it stores all of its base images. The base images are owned by
