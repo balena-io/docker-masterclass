@@ -158,9 +158,11 @@ an issue). As such, you'll need to follow the instructions to add any user that
 also wants to run the `docker` command to the `docker` group. If you don't do
 this, only the `root` user will be able to use Docker under Linux. For
 convenience, the command to do this is:
-```
+
+```shell
 $ sudo usermod -aG docker <your-user>
 ```
+
 Where `<your-user>` is the username for the user to run as non-`root`.
 However ensure that this is the latest command under the Docker installation
 instructions before doing so. You'll need to log out of the shell and then
@@ -172,7 +174,8 @@ permission to run in the background.
 
 Once you've installed Docker, you should be able to open a new shell terminal
 and verify that Docker is running correctly by running:
-```
+
+```shell
 $ docker version
 Client: Docker Engine - Community
  Version:           19.03.5
@@ -212,7 +215,8 @@ remote repositories, etc.
 
 We'll be using `docker` for almost all of the exercises, so it's worth having
 a quick look at all the available commands:
-```
+
+```shell
 $ docker help
 
 Usage:  docker [OPTIONS] COMMAND
@@ -306,6 +310,7 @@ Dockerfile.
 
 As mentioned, Dockerfiles are laid out as a series of directives, which are
 executed in series. Here's a very basic example:
+
 ```dockerfile
 FROM debian:buster
 
@@ -339,7 +344,8 @@ the filesystem layout that exists in the base image.
 
 Here's a small example. Consider an image, let's call it 'simple-base', which
 has the following directories and files in its layers:
-```
+
+```shell
 .
 ├── directory-1
 │   ├── directory-1-1
@@ -348,13 +354,16 @@ has the following directories and files in its layers:
 └── directory-2
     └── file3.txt
 ```
+
 We can use the `FROM` directive at the start of a Dockerfile to inherit from
 this base image:
-```
+
+```dockerfile
 # Will use simple-base as a base images, so all the files/directories from
 # simple-base are now available to work on.
 FROM simple-base
 ```
+
 You'll note that comments can be used in Dockerfiles, by simply using `#` at
 the start of the line, very much like Linux/Unix shell operations.
 
@@ -394,18 +403,22 @@ copied into the image.
 The following will recursively copy the contents of the  `directory-3`
 directory in the current build context into the image at the location
 `/directory-3`:
-```
+
+```dockerfile
 COPY directory-3 /directory-3/
 ```
+
 Note that you need to add the trailing `/` to the destination directory. If
 the destination directory doesn't already exist, it'll be dynamically created
 (which means you can specify a nested destination directory without having to
 run `mkdir` in the image).
 
 Wildcards also work, so that the following:
-```
+
+```dockerfile
 COPY * /all-the-files/
 ```
+
 Will recursively copy *everything* (including the Dockerfile) in the current
 build context to the `/all-the-files/` directory in the built image.
 
@@ -434,7 +447,8 @@ available *at the point when the directive is executed* inside the image, it's
 used to do things like install useful libraries and packages. For example,
 suppose we're using a Debian Buster base image, and we want to install the
 Node.js package, we can use `RUN` to execute the `apt-get` binary to do this:
-```
+
+```dockerfile
 RUN apt-get update \
     && apt-get install -y nodejs
 ```
@@ -443,7 +457,8 @@ Another example might be running a command on some files in the image, to
 create new files or modify them. The following will create a new file with
 some initial text in and then print that file out, before then modifying that
 file using `sed` to change the text and printing out the next contents:
-```
+
+```dockerfile
 RUN echo 'Hello there!' > /my-file.txt \
     && cat /my-file.txt
 
@@ -454,17 +469,21 @@ RUN sed -i 's/Hello/Goodbye/' /my-file.txt \
 As you can see, any binary that's part of the distribution is available, and you
 can even use files you copy in yourself. Suppose we had a script called
 `list-files.sh` in the current build context that was simply:
-```
+
+```shell
 #!/bin/bash
 ls -l /
 ```
+
 We could copy this into the Docker image during the build and then run it:
-```
+
+```dockerfile
 COPY list-files.sh /list-files.sh
 
 RUN /list-files.sh > /files.txt \
     && cat /files.txt
 ```
+
 This would copy the script into the image at location `/list-files.sh`, and
 then run that script to get a list of all the entries in the root directory to
 a file and then outputing the contents to the build.
@@ -483,13 +502,16 @@ exit. But this doesn't mean it has to be like that.
 Taking the example from the `RUN` directive explanation, the following will set
 the command to run when the container is instantiated to list the entries in the
 root of the file system:
-```
+
+```dockerfile
 CMD /list-files.sh
 ```
+
 After the command has run, it will return and the container running it will
 exit. Parameters can be passed to it by simply adding a space between the
 executable and the parameters:
-```
+
+```dockerfile
 CMD echo "Hello there!"
 ```
 
@@ -501,9 +523,11 @@ inside a `/bin/sh -c <command>`).
 There's also an alternative form of the command, called the 'exec' form, which
 uses a JSON array to call an executable and pass parameters to it *without* a
 shell. We'd call our script in the same way in this form as such:
-```
+
+```dockerfile
 CMD ["/bin/sh", "-c", "/list-files.sh"]
 ```
+
 Here, the command being executed is the shell itself (`/bin/sh`) and the
 parameters passed signify to run a command in it (`-c`) and the command to
 run (`/list-files.sh`). Of course, if the command to execute was a binary,
@@ -540,14 +564,18 @@ how to put some of these together to build a simple Docker image.
 
 For convenience, export a variable to point to the root of this masterclass
 repository, as we'll use this for the rest of the exercises, e.g.:
-```
+
+```shell
 $ export BALENA_DOCKER_MASTERCLASS=~/docker-masterclass
 ```
+
 Now change directory to the simple-docker-app directory in the root of this
 masterclass repository, e.g.:
-```
+
+```shell
 $ cd $BALENA_DOCKER_MASTERCLASS/simple-docker-app
 ```
+
 Note that for the rest of these exercises, we're assuming that you're using an
 x64 based machine. Should you be using an alternative architecture, such as
 Arm, you'll need to change the architecture of the base image that you're using
@@ -559,7 +587,8 @@ various languages, libraries, etc.
 
 Load a code editor of your choice, and edit the `Dockerfile` file in the
 `simple-docker-app` directory. Add the following:
-```
+
+```dockerfile
 FROM balenalib/intel-nuc-debian-node:latest
 
 COPY * /usr/src/app/
@@ -569,6 +598,7 @@ RUN cd /usr/src/app \
 
 CMD ["/usr/local/bin/node", "/usr/src/app/index.js"]
 ```
+
 Ensure you have a newline at the end of the Dockerfile. Let's quickly run
 through exactly what this Dockerfile does:
 
@@ -585,19 +615,21 @@ This copies all of the files in the `simple-docker-app` directory (the current
 Docker build context) into the image being built in the `/usr/src/app` directory
 which is dynamically created first.
 
-```
+```dockerfile
 RUN cd /usr/src/app \
     && npm install
 ```
+
 After changing directory into the `/usr/src/app` directory, the `npm install`
 command is run, which uses the `package.json` file previously copied to this
 location to install all of the required npm packages specified in it.
 This creates a `/usr/src/app/node_modules` directory with all the dependencies
 in.
 
-```
+```dockerfile
 CMD ["/usr/local/bin/node", "/usr/src/app/index.js"]
 ```
+
 As previously described, the `CMD` directive informs Docker what to run when
 the Docker image is instantiated as a container. In this case, because the
 directive is using the `exec` format, full paths to the command to run need to
@@ -606,7 +638,8 @@ source file (`/usr/src/app/index.js`).
 
 Once you've edited the Dockerfile, we can build a Docker image from it using
 the following `docker` CLI command:
-```
+
+```shell
 $ docker build --tag simple-docker-app .
 Sending build context to Docker daemon  18.94kB
 Step 1/4 : FROM balenalib/intel-nuc-debian-node:latest
@@ -643,6 +676,7 @@ Removing intermediate container 9f9c787b7a1d
 Successfully built 630b3919abb5
 Successfully tagged simple-docker-app:latest
 ```
+
 The `docker build` command itself instructs the Docker daemon to build a new
 image, the `--tag` (shortened form `-t`) switch informs it how to name the image
 (naming is in the form of `repository:tag`, where the `tag` is optional), and
@@ -668,12 +702,14 @@ limits the number of layers produced in an image. We'll go more into these
 techniques later in the Masterclass.
 
 We can now list the images by running:
-```
+
+```shell
 $ docker images
 REPOSITORY                        TAG                 IMAGE ID            CREATED             SIZE
 simple-docker-app                 latest              630b3919abb5        14 minutes ago      272MB
 balenalib/intel-nuc-debian-node   latest              4498fe12b99e        11 hours ago        270MB
 ```
+
 Note that each image has a repository name, tag and image ID. Most Docker
 commands working with images can take the name of the container or the ID.
 If using the container name, note that a Docker image repository name can be
@@ -704,31 +740,41 @@ our default working directory. Think of it a bit like running `cd` to change to
 the directory specified before running any commands.
 
 With that in mind, add a new line to our Dockerfile after the `FROM` directive:
-```
+
+```dockerfile
 WORKDIR /usr/src/app
 ```
+
 We'll also now change a few of the other lines to remove specific references to
 `/usr/src/app`.
 Change:
-```
+
+```dockerfile
 RUN cd /usr/src/app \
     && npm install
 ```
+
 to:
-```
+
+```dockerfile
 RUN npm install
 ```
+
 And finally change:
-```
+
+```dockerfile
 CMD ["/usr/local/bin/node", "/usr/src/app/index.js"]
 ```
+
 to:
-```
+
+```dockerfile
 CMD ["/usr/local/bin/node", "index.js"]
 ```
 
 Let's rebuild the image again:
-```
+
+```shell
 $ docker build -t simple-docker-app .
 Sending build context to Docker daemon  18.94kB
 Step 1/5 : FROM balenalib/intel-nuc-debian-node:latest
@@ -754,6 +800,7 @@ Removing intermediate container c83a11a07b0f
 Successfully built ca72102d9256
 Successfully tagged simple-docker-app:latest
 ```
+
 The first thing you'll notice is that the `FROM` line didn't show the Debian
 base image being pulled. That's because it's already downloaded and stored it
 in the local registry.
@@ -772,12 +819,14 @@ change the command used to actually run the Node.js app to npm, as it would find
 the `package.json` in the same directory and use the `start` section from it.
 
 Change the final `CMD` line to:
-```
+
+```dockerfile
 CMD ["/usr/local/bin/npm", "start"]
 ```
 
 Finally rebuild the image again so this final line is used, with:
-```
+
+```shell
 $ docker build -t simple-docker-app .
 ```
 
@@ -806,7 +855,8 @@ To run an image as a container, we can use the
 command. We can either pass the repository and tag name or use the ID. We'll
 just simply ask `docker run` to use the `simple-docker-app` image, without a tag
 (which will assume it should use the `latest` tag):
-```
+
+```shell
 $ docker run --tty simple-docker-app
 
 > simple-docker-app@1.0.0 start /usr/src/app
@@ -814,17 +864,20 @@ $ docker run --tty simple-docker-app
 
 Echo server is up and listening...
 ```
+
 We'll explain the significance of `--tty` later, but for now it just means that
 we can stop the container using `Ctrl+C` when we're done with it.
 The act of running creates a new container instance based on that
 image, which is now running under the Docker daemon. Open a new terminal (which
 from this point on we'll call T2 with the terminal you ran the Docker image in
 as T1), and enter:
-```
+
+```shell
 $ docker ps
 CONTAINER ID        IMAGE               COMMAND                  CREATED              STATUS              PORTS               NAMES
 61578a11c16e        simple-docker-app   "/usr/bin/entry.sh /…"   About a minute ago   Up About a minute                       tender_gagarin
 ```
+
 [`docker ps`](https://docs.docker.com/engine/reference/commandline/ps/) shows
 us all the currently running container instances. In this case there's just the
 one we've started. You can see the command that it's running, as well as the
@@ -838,10 +891,12 @@ If you look at the source code in `index.js`, you'll see that we've a little
 endpoint service listening for REST POST requests to the `/echo` endpoint.
 You'll also see that the service is running on port 9854. So, let's use `curl`
 in T2 to send a POST request:
-```
+
+```shell
 $ curl -XPOST http://localhost:9854/echo -H 'Content-type: text/plain' -d 'Hello there!'
 curl: (7) Failed to connect to localhost port 9854: Connection refused
 ```
+
 Well, that's odd! The source for the image shows that the Express server is
 listening on port 9854, but `curl` can't get a connection to it. The reason is
 that whilst the Express server in the container is trying to listen to the
@@ -857,25 +912,33 @@ or stop it by running
 [`docker stop`](https://docs.docker.com/engine/reference/commandline/stop/) in
 T2, passing either its name or ID as a final parameter. In the case of the
 container we've created here, that would be:
-```
+
+```shell
 $ docker stop tender_gagarin
 ```
+
 or:
-```
+
+```shell
 $ docker stop 61578a11c16e
 ```
+
 Once stopped, the container no longer shows up as running in `docker ps`:
-```
+
+```shell
 $ docker ps
 CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
 ```
+
 But it will show up as a stopped container in the list of all containers if we
 pass `--all` (shortened form `-a`) to `docker ps`:
-```
+
+```shell
 $ docker ps --all
 CONTAINER ID        IMAGE               COMMAND                  CREATED              STATUS              PORTS               NAMES
 61578a11c16e        simple-docker-app   "/usr/bin/entry.sh /…"   About a minute ago   Exited (0) a minute ago                 tender_gagarin
 ```
+
 The `--all` (which can also be written `-a`) switch to `docker ps` tells it to
 list *all* the container instances that are currently available, not just those
 that are currently running.
@@ -886,12 +949,15 @@ which will allow you to restart any previously created and stopped container
 instance. Simply pass the name of the container or its ID and Docker will start
 the container again using the same parameters that it was originally run or
 created with.
-```
+
+```shell
 $ docker start 61578a11c16e
 61578a11c16e
 ```
+
 Finally stop the container again before continuing with:
-```
+
+```shell
 $ docker stop 61578a11c16e
 61578a11c16e
 ```
@@ -915,7 +981,8 @@ like to 'publish' traffic into it from the host OS.
 
 We're going to re-run the image again, but this time specifying that the
 right port should be opened up into the container. In T1, run the following:
-```
+
+```shell
 $ docker run --tty --publish 9854:9854 simple-docker-app
 
 > simple-docker-app@1.0.0 start /usr/src/app
@@ -923,6 +990,7 @@ $ docker run --tty --publish 9854:9854 simple-docker-app
 
 Echo server is up and listening...
 ```
+
 Note that we specified 9854 *twice* as the arguments to the `--publish` switch
 (this can be shortened to `-p`).
 This isn't an error, but it lets us map a specific port inside the container
@@ -935,11 +1003,13 @@ published (for example mapping all traffic from ports 1234 to 1238 on the host
 to a single port inside the container would be `--publish 1234-1238:1234-1238`).
 
 In T2, have a look at the output of `docker ps` again:
-```
+
+```shell
 $ docker ps
 CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES
 0579294093b6        simple-docker-app   "/usr/bin/entry.sh /…"   8 seconds ago       Up 8 seconds        0.0.0.0:9854->9854/tcp   jolly_banzai
 ```
+
 Aha! Now we can see that the `PORTS` section has a value in it,
 `0.0.0.0:9854->9854/tcp`. This states that port `9854` on IP address `0.0.0.0`
 on the host OS is mapped to port `9854/tcp` inside the container. A couple of
@@ -956,10 +1026,12 @@ ports list with `/udp`, eg. `--publish 9854/udp:9854/udp` would map any traffic
 from UDP port 9854 on the host to UDP port 9854 in the container.
 
 Finally let's try the `curl` command again in T2:
-```
+
+```shell
 $ curl -XPOST http://localhost:9854/echo -H 'Content-type: text/plain' -d 'Hello there!'
 Hello there!
 ```
+
 Success! We've posted an HTTP request from the host to the Docker container
 instance, and received a response.
 
@@ -972,15 +1044,18 @@ Whilst we're on the topic of ports, this is a good time to quickly discuss the
 `EXPOSE` directive. This can be used in Dockerfiles to state that the container
 would like to open a particular port when run as a container. Let's try this
 by adding:
-```
+
+```dockerfile
 EXPOSE 9854
 ```
+
 to our Dockerfile (it doesn't matter particularly where for this example, but
 good practice is near the start of the Dockerfile, after the `FROM` line).
 (If you wanted to expose a UDP port, you'd simply specify `EXPOSE 9854/udp`.)
 
 Now let's rebuild our Docker image in T1:
-```
+
+```shell
 $ docker build -t simple-docker-app .
 Sending build context to Docker daemon  18.94kB
 Step 1/6 : FROM balenalib/intel-nuc-debian-node:latest
@@ -1012,11 +1087,13 @@ Removing intermediate container 1c027dde602e
 Successfully built 8d1460ff22b2
 Successfully tagged simple-docker-app:latest
 ```
+
 Now we'll run the new version of the image, but we'll remove the use of
 `--publish` and instead use the `--publish-all` (shortened form `-P`) switch
 instead, which will publish all ports specifed in `EXPOSE` directives in the
 image to the host:
-```
+
+```shell
 $ docker run --tty --publish-all simple-docker-app
 
 > simple-docker-app@1.0.0 start /usr/src/app
@@ -1024,18 +1101,23 @@ $ docker run --tty --publish-all simple-docker-app
 
 Echo server is up and listening...
 ```
+
 In T2 run the `curl` command again:
-```
+
+```shell
 $ curl -XPOST http://localhost:9854/echo -H 'Content-type: text/plain' -d 'Hello there!'
 curl: (7) Failed to connect to localhost port 9854: Connection refused
 ```
+
 It looks like `curl` can't actually connect to the host on port 9854. Let's use
 T2 again to see what `docker ps` says:
-```
+
+```shell
 $ docker ps
 CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                     NAMES
 636c8f11fee2        simple-docker-app   "/usr/bin/entry.sh /…"   3 minutes ago       Up 3 minutes        0.0.0.0:32769->9854/tcp   epic_montalcini
 ```
+
 Interestingly, whilst port 9854 in the container *is* mapped a port on the host,
 it's not mapped to port 9854. This is because `--publish-all` maps ports
 specified by the `EXPOSE` directive to
@@ -1047,10 +1129,12 @@ services are usually run.
 If we now try `curl` again in T2 using port 32769 (this will most likely change
 on your own machine, ensure you use the right mapped port), we'll see that all
 works as expected:
-```
+
+```shell
 $ curl -XPOST http://localhost:32769/echo -H 'Content-type: text/plain' -d 'Hello there!'
 Hello there!
 ```
+
 Any Docker image which has been built with the `EXPOSE` directive can still be
 forced to map a specific host port to a specific container port just as before
 by using the `--publish` switch to `docker run`.
@@ -1071,13 +1155,15 @@ One thing you may have spotted whilst we were stopping and rerunning our Docker
 image was that the name and the ID of the container kept changing.
 
 In the terminal, run the following:
-```
+
+```shell
 $ docker ps --all
 CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                         PORTS               NAMES
 636c8f11fee2        simple-docker-app   "/usr/bin/entry.sh /…"   20 minutes ago      Exited (0) 3 minutes ago                           epic_montalcini
 0579294093b6        f50ceee6da24        "/usr/bin/entry.sh /…"   51 minutes ago      Exited (0) 26 minutes ago                          jolly_banzai
 61578a11c16e        d00c59983bd8        "/usr/bin/entry.sh /…"   About an hour ago   Exited (0) About an hour ago                       tender_gagarin
 ```
+
 However, looking at the list, this seems strange at first. We we just kept
 running our `simple-docker-app`, so why are there several instances of it? Well,
 every time we used `docker run simple-docker-app`, we were asking the Docker
@@ -1114,15 +1200,18 @@ checked the layers against those that already exist for the image, have seen
 nothing had changed, and the image would not have been given a new ID or name.
 
 We can easily check this by running the following in the terminal:
-```
+
+```shell
 $ docker images
 REPOSITORY                        TAG                 IMAGE ID            CREATED             SIZE
 simple-docker-app                 latest              8d1460ff22b2        29 minutes ago      272MB
 ...
 ```
+
 The latest image ID for `simple-docker-app:latest` is `8d1460ff22b2`. Let's
 try rebuilding the image:
-```
+
+```shell
 $ docker build -t simple-docker-app .
 Sending build context to Docker daemon  18.94kB
 Step 1/6 : FROM balenalib/intel-nuc-debian-node:latest
@@ -1145,14 +1234,17 @@ Step 6/6 : CMD ["/usr/local/bin/npm", "start"]
 Successfully built 8d1460ff22b2
 Successfully tagged simple-docker-app:latest
 ```
+
 The build will finish almost at once; because there were no changes, the image
 ID build is *still* `8d1460ff22b2`, and the name remains the same:
-```
+
+```shell
 $ docker images
 REPOSITORY                        TAG                 IMAGE ID            CREATED             SIZE
 simple-docker-app                 latest              8d1460ff22b2        32 minutes ago      272MB
 ...
 ```
+
 If we were to make any changes to the Dockerfile or any of the files built into
 the image, the ID and the name would change again, to denote that the `latest`
 version of the image is now different to that previously.
@@ -1161,7 +1253,8 @@ To make this a bit clearer, we'll remove all the current containers and images
 and start again with a new naming scheme.
 
 In the terminal run:
-```
+
+```shell
 $ docker rm $(docker ps --all --quiet) && docker rmi $(docker images --quiet)
 92b04db835b2
 c7747c038ccb
@@ -1206,11 +1299,14 @@ Deleted: sha256:bd032d966a12ff731c1a46bf62b0fe079d4c412d3e290d4f6321c483ea9eb2eb
 Deleted: sha256:6d378e46857b5177133d61d45333dae1f29e6171914bc5ee7bcc7e2f0fc75c17
 Deleted: sha256:f2cb0ecef392f2a630fa1205b874ab2e2aedf96de04d0b8838e4e728e28142da
 ```
+
 This will wipe *all* images and containers from the local repository. Let's
 quickly break down what that command did:
-```
+
+```shell
 docker rm $(docker ps --all --quiet)
 ```
+
 The `docker ps --all --quiet` command lists all instances of containers, running
 or not, and output their IDs and nothing else (the `--quiet` switch, which can
 also be shortened to `-q`). The `$()` wrapper executes this for the `docker rm`
@@ -1219,9 +1315,11 @@ repository. You can individually remove a container instance either by using its
 name or ID, eg. `docker rm <IDorName>`.
 
 After this, the next command is run:
-```
+
+```shell
 docker rmi $(docker images --quiet)
 ```
+
 Similarly to the `docker ps` command, the `--quiet` switch to `docker images`
 will only output the IDs of the images. This is then exectured for `docker rmi`
 which will remove each image by its ID. Again, you can manually remove a
@@ -1237,7 +1335,8 @@ it will not remove containers that have been created from these images.
 
 We're going to now rebuild our image from the Dockerfile, but this time we're
 explicitly going to give it version tags:
-```
+
+```shell
 $ docker build -t simple-docker-app:v0.0.1 .
 Sending build context to Docker daemon   5.12kB
 Step 1/6 : FROM balenalib/intel-nuc-debian-node:latest
@@ -1283,28 +1382,34 @@ Removing intermediate container a628f762ef4b
 Successfully built 25d3625211c2
 Successfully tagged simple-docker-app:v0.0.1
 ```
+
 Now run:
-```
+
+```shell
 $ docker images
 REPOSITORY                        TAG                 IMAGE ID            CREATED             SIZE
 simple-docker-app                 v0.0.1              25d3625211c2        24 seconds ago      273MB
 balenalib/intel-nuc-debian-node   latest              4498fe12b99e        38 hours ago        270MB
 ```
+
 Unlike when we built the image before, we have now set a specific tag for the
 image repository. Also note how the `latest` tag is not present. Let's try
 and run the image in the same way we did before, using just the repository name:
-```
+
+```shell
 $ docker run --tty simple-docker-app
 Unable to find image 'simple-docker-app:latest' locally
 docker: Error response from daemon: pull access denied for simple-docker-app, repository does not exist or may require 'docker login': denied: requested access to the resource is denied.
 See 'docker run --help'.
 ```
+
 Docker can't find the `latest` tag, because it's not been set, so it is not
 able to run the image. We *could* run it by specifying
 `docker run simple-docker-app:v0.0.1`, but there's also a couple of ways we
 can generate the latest tag too. The first would be to rebuild the image with
 the `latest` tag as well:
-```
+
+```shell
 $ docker build -t simple-docker-app:v0.0.1 -t simple-docker-app:latest .
 Sending build context to Docker daemon   5.12kB
 Step 1/6 : FROM balenalib/intel-nuc-debian-node:latest
@@ -1328,16 +1433,19 @@ Successfully built 25d3625211c2
 Successfully tagged simple-docker-app:v0.0.1
 Successfully tagged simple-docker-app:latest
 ```
+
 Again, this rebuild was very fast because nothing had actually changed, and
 all that the Docker daemon actually had to do was add a new tag. Tags show up
 as separate images. If we list the images again:
-```
-$ $ docker images
+
+```shell
+$ docker images
 REPOSITORY                        TAG                 IMAGE ID            CREATED              SIZE
 simple-docker-app                 latest              25d3625211c2        About a minute ago   273MB
 simple-docker-app                 v0.0.1              25d3625211c2        About a minute ago   273MB
 balenalib/intel-nuc-debian-node   latest              4498fe12b99e        38 hours ago         270MB
 ```
+
 You can see that the *same* image ID is actually related to two different tags.
 We will now be able to run the image without the specific tag (defaulting to
 `latest`) again.
@@ -1345,11 +1453,14 @@ We will now be able to run the image without the specific tag (defaulting to
 However, if we now change something that alters the image that we build, this
 will change he situation. In your code editor, change `index.js` and add a
 line at the very top that says:
-```
+
+```js
 // This comment changes the image
 ```
+
 We'll now rebuild the image with:
-```
+
+```shell
 $ docker build -t simple-docker-app .
 Sending build context to Docker daemon   5.12kB
 Step 1/6 : FROM balenalib/intel-nuc-debian-node:latest
@@ -1380,14 +1491,17 @@ Removing intermediate container 97806c309a25
 Successfully built 4817e03f7def
 Successfully tagged simple-docker-app:latest
 ```
+
 Finally run:
-```
+
+```shell
 $ docker images
 REPOSITORY                        TAG                 IMAGE ID            CREATED             SIZE
 simple-docker-app                 latest              4817e03f7def        27 seconds ago      273MB
 simple-docker-app                 v0.0.1              25d3625211c2        2 minutes ago       273MB
 balenalib/intel-nuc-debian-node   latest              4498fe12b99e        38 hours ago        270MB
 ```
+
 As you can see, because when we rebuilt we only specified the repository name
 to `-t` and *not* an actual tag, `latest` was assumed and the `latest` tag now
 points to the newer image.
@@ -1398,11 +1512,14 @@ tag name, which allows you to easily identify older versions of the image.
 
 To reinforce that point, we'll add one final comment line to `index.js`, just
 below the other:
-```
+
+```js
 // Another comment changes the image
 ```
+
 Finally, rebuild the image with a `v0.0.2` tag *and* the `latest` tag:
-```
+
+```shell
 $ docker build -t simple-docker-app:v0.0.2 -t simple-docker-app:latest .
 Sending build context to Docker daemon   5.12kB
 Step 1/6 : FROM balenalib/intel-nuc-debian-node:latest
@@ -1434,8 +1551,10 @@ Successfully built d7fefc78916d
 Successfully tagged simple-docker-app:v0.0.2
 Successfully tagged simple-docker-app:latest
 ```
+
 And run:
-```
+
+```shell
 $ docker images
 REPOSITORY                        TAG                 IMAGE ID            CREATED              SIZE
 simple-docker-app                 latest              d7fefc78916d        22 seconds ago       273MB
@@ -1444,6 +1563,7 @@ simple-docker-app                 v0.0.2              d7fefc78916d        22 sec
 simple-docker-app                 v0.0.1              25d3625211c2        3 minutes ago        273MB
 balenalib/intel-nuc-debian-node   latest              4498fe12b99e        38 hours ago         270MB
 ```
+
 We now have a new version, `v0.0.2`, which is also the `latest` version. We also
 still have our original version, `v0.0.1`. But note that the version we built
 without a tag has now been stripped of its repository and `latest` tag. Because
@@ -1472,7 +1592,8 @@ already exists.
 Let's visualize an example here to make it a bit clearer. Taking the contents
 of the `simple-docker-app` Dockerfile you currently have, it'll look something
 like this:
-```
+
+```dockerfile
 FROM balenalib/intel-nuc-debian-node:latest
 
 EXPOSE 9854
@@ -1485,9 +1606,11 @@ RUN npm install
 
 CMD ["/usr/local/bin/npm", "start"]
 ```
+
 If we rebuild the app, without making any changes, we'll see that Docker
 finishes it very quickly:
-```
+
+```shell
 $ docker build -t simple-docker-app:latest .
 Sending build context to Docker daemon   5.12kB
 Step 1/6 : FROM balenalib/intel-nuc-debian-node:latest
@@ -1510,6 +1633,7 @@ Step 6/6 : CMD ["/usr/local/bin/npm", "start"]
 Successfully built d7fefc78916d
 Successfully tagged simple-docker-app:latest
 ```
+
 Note that for each step that gets carried out, Docker reports `Using cache`.
 The reason for this is because Docker has noticed that there is already an image
 that exists based on `balenalib/intel-nuc-debian-node:latest`, and that for
@@ -1527,12 +1651,15 @@ for that step. This is called 'cache busting'.
 So now we know a bit more about this, let's change one of the last lines in the
 Dockerfile so that change the way the output image is built. Just before the
 final line in the Dockerfile (the `CMD` line), add the following:
-```
+
+```dockerfile
 RUN echo "I'm a new layer!"
 ```
+
 From what we now know, when we now rebuild the Docker image it'll use the cache
 for all the layers up to the new step we've added with the new `RUN` directive:
-```
+
+```shell
 $ docker build -t simple-docker-app:latest .
 Sending build context to Docker daemon  4.096kB
 Step 1/7 : FROM balenalib/intel-nuc-debian-node:latest
@@ -1568,15 +1695,18 @@ Removing intermediate container 5b954db009d2
 Successfully built 8c3c0d4e9665
 Successfully tagged simple-docker-app:latest
 ```
+
 We can see from the build output though, that it has *not* used the cache for
 all the steps up to the new directive. In fact, although it used the cache for
 the `FROM`, `EXPOSE` and `WORKDIR` steps, it created a new layer for the `COPY`
 command onwards. But we didn't change anything else apart from the Dockerfile!
 Well, that actually explains exactly the reason *why* it created a new layer
 from that point onwards. Let's look at the `COPY` command:
-```
+
+```dockerfile
 COPY * /usr/src/app/
 ```
+
 This says to copy everything from the current build context into the
 `/usr/src/app` directory inside the image. But this *includes* the Dockerfile
 itself, which we've changed. Because of this, the layer output would not be
@@ -1590,12 +1720,14 @@ The first is via the use of a
 file. This allows us to specify files and directories that shouldn't be included
 as part of the context sent via `COPY` (or `ADD` which we'll describe later in
 the Masterclass). In the `simple-docker-app` directory, execute the following:
-```
+
+```shell
 cat <<EOF >> .dockerignore
 Dockerfile
 .dockerignore
 EOF
 ```
+
 This will create a `.dockerignore` file that says not to copy the `Dockerfile`
 and `.dockerignore` file to the new layer when the `COPY` command is run. Note
 that if we hadn't included the `.dockerignore` file itself, then when a build
@@ -1603,11 +1735,14 @@ is next run, cache busting will still occur on the `COPY` line because the
 `.dockerignore` file itself would be copied into the image!
 
 And now let's add yet another line to the Dockerfile just before the `CMD`:
-```
+
+```dockerfile
 RUN echo "I'm yet another new layer!"
 ```
+
 Run the build again:
-```
+
+```shell
 $ docker build -t simple-docker-app:latest .
 Sending build context to Docker daemon   5.12kB
 Step 1/8 : FROM balenalib/intel-nuc-debian-node:latest
@@ -1636,14 +1771,18 @@ Removing intermediate container c73ee349d0c8
 Successfully built 8da0e5e54752
 Successfully tagged simple-docker-app:latest
 ```
+
 So again, this didn't work, why not? Well, this time, the `COPY` instruction
 has changed again because now we're *not* copying the Dockerfile in. Finally,
 add another new line before the `CMD` directive:
-```
+
+```dockerfile
 RUN echo "I'm a final layer!"
 ```
+
 And now rerun the build:
-```
+
+```shell
 $ docker build -t simple-docker-app:latest .
 Sending build context to Docker daemon   5.12kB
 Step 1/9 : FROM balenalib/intel-nuc-debian-node:latest
@@ -1678,6 +1817,7 @@ Removing intermediate container 8730c2627796
 Successfully built 14984b3f702d
 Successfully tagged simple-docker-app:latest
 ```
+
 This time the cache was used for the build right up until the new step we added
 to the Dockerfile because it's no longer being copied. Finally, remove the
 `RUN` lines that we just added.
@@ -1685,13 +1825,17 @@ to the Dockerfile because it's no longer being copied. Finally, remove the
 There's another way to use `COPY` so that the cache is used efficiently, and
 that's to only copy files required to build your image. Change your Dockerfile
 so that the line:
-```
+
+```dockerfile
 COPY * /usr/src/app/
 ```
+
 becomes:
-```
+
+```dockerfile
 COPY package.json index.js /usr/src/app/
 ```
+
 If we hadn't have already created a `.dockerignore` file, this would have much
 the same effect in that the Dockerfile would not be copied, but only the
 npm package manifest and the source code.
@@ -1703,7 +1847,8 @@ ensure that the cache is always used as much as possible.
 The second way to ensure that the cache is used as much as possible is to
 consider how files and directives may affect those that come after it in
 the Dockerfile. By now, your Dockerfile should look something like this:
-```
+
+```dockerfile
 FROM balenalib/intel-nuc-debian-node:latest
 
 EXPOSE 9854
@@ -1716,17 +1861,21 @@ RUN npm install
 
 CMD ["/usr/local/bin/npm", "start"]
 ```
+
 Ensure that's up-to-date by building it with
 `docker build -t simple-docker-app:latest .`.
 
 Now remove the two lines in the `index.js` source file we added earlier,
 ie.:
-```
+
+```js
 // This comment changes the image
 // Another comment changes the image
 ```
+
 Let's rebuild the image again:
-```
+
+```shell
 $ docker build -t simple-docker-app:latest .
 Sending build context to Docker daemon   5.12kB
 Step 1/6 : FROM balenalib/intel-nuc-debian-node:latest
@@ -1757,6 +1906,7 @@ Removing intermediate container 674741c25eaa
 Successfully built 4f6086286849
 Successfully tagged simple-docker-app:latest
 ```
+
 As expected, because we've removed the two lines from the source file,
 everything from the `COPY` directive onwards has forced a cache bust and new
 layers. However, there's actually something we can do here to ensure that
@@ -1767,21 +1917,26 @@ that altering the source file changes. As we're not changing the manifest,
 we could actually split up the `COPY` commands so that if only the source file
 changes, the previous npm installation layer is used from cache. Change the
 following lines in the Dockerfile:
-```
+
+```dockerfile
 COPY package.json index.js /usr/src/app/
 
 RUN npm install
 ```
+
 to:
-```
+
+```dockerfile
 COPY package.json /usr/src/app/
 
 RUN npm install
 
 COPY index.js /usr/src/app/
 ```
+
 And rebuild the image again:
-```
+
+```shell
 $ docker build -t simple-docker-app:latest .
 Sending build context to Docker daemon   5.12kB
 Step 1/7 : FROM balenalib/intel-nuc-debian-node:latest
@@ -1814,13 +1969,17 @@ Removing intermediate container faf3d745a235
 Successfully built 3a8c0a432bc2
 Successfully tagged simple-docker-app:latest
 ```
+
 Now change the `index.js` source file again and re-add those two comment lines:
-```
+
+```js
 // This comment changes the image
 // Another comment changes the image
 ```
+
 at the start of the file. Finally let's rebuild again:
-```
+
+```shell
 $ docker build -t simple-docker-app:latest .
 Sending build context to Docker daemon   5.12kB
 Step 1/7 : FROM balenalib/intel-nuc-debian-node:latest
@@ -1846,12 +2005,15 @@ Removing intermediate container 0c15ac7cfc32
 Successfully built 81a2fcf7791c
 Successfully tagged simple-docker-app:latest
 ```
+
 The build was far quicker as npm didn't have to reinstall the used modules
 again, and the filesystem layer already built was reused:
-```
+
+```shell
 Step 5/7 : RUN npm install
  ---> Using cache
 ```
+
 Considering how your Dockerfile is constructed, and how the cache may be
 utilized, is an extremely important part of using Docker. Whilst the example
 we've used is very simplistic, for builds where a Dockerfile is many lines long
@@ -1873,40 +2035,52 @@ the terminal, with no output being logged to it.
 
 This can be achieved by passing the `--detach` (shortened form `-d`) to the
 `docker run` command. Let's give this a go now:
-```
+
+```shell
 $ docker run --detach --publish "9854:9854" simple-docker-app
 f0960149a42f7f01c219c325e18da7beac0ca9ff7072344642f56baaeb9cd641
 ```
+
 Notice how this time, we haven't passed `--tty`. That's because we're inherently
 detaching the terminal from the Docker container, and the `--detach` would
 essentially be in conflict.
 The output from this command is the ID of the now running docker container:
-```
+
+```shell
 $ docker ps
 CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES
 f0960149a42f        simple-docker-app   "/usr/bin/entry.sh /…"   11 seconds ago      Up 11 seconds       0.0.0.0:9854->9854/tcp   compassionate_williams
 ```
+
 We can still use the container in detached mode, of course:
-```
+
+```bash
 $ curl -XPOST http://localhost:9854/echo -H 'Content-type: text/plain' -d 'Hello!'
 Hello!
 ```
+
 The container will now run until explicitly stopped. However, we may want to see
 what it's doing. We can easily do this by using the
 [`docker attach`](https://docs.docker.com/engine/reference/commandline/attach/)
 command specifying the name or ID of the container:
-```
+
+```shell
 docker attach f0960149a42f
 ```
+
 Start a new terminal and in it run the `curl` command to our container again:
-```
+
+```shell
 $ curl -XPOST http://localhost:9854/echo -H 'Content-type: text/plain' -d 'Attached echo!'
 Attached echo!
 ```
+
 Note that in the terminal where we attached to the container, we see:
-```
+
+```shell
 Echoing Attached echo!...
 ```
+
 `Ctrl+C` in the terminal where we attached to the container will stop that
 container, because we reattached to it after starting it in detached mode.
 However, it's very important to note that if you run a container in detached
@@ -1922,7 +2096,8 @@ A container can also be run by overriding the default command that it uses
 (the `CMD` directive from the Dockerfile). Here, the command that you want to
 run instead is passed as the last parameters to the `docker run` command. Let's
 try this now by running the following:
-```
+
+```shell
 $ docker run --publish "9854:9854" simple-docker-app ls -l /usr/src/app
 total 28
 -rw-r--r--  1 root root   488 Mar  5 00:09 index.js
@@ -1930,6 +2105,7 @@ drwxr-xr-x 52 root root  4096 Mar  5 00:09 node_modules
 -rw-r--r--  1 root root 14293 Mar  5 00:09 package-lock.json
 -rw-r--r--  1 root root   321 Mar  3 18:50 package.json
 ```
+
 Note that once the command exits, the container itself stops running. This is
 because the command that we've used to override the default container command
 is not a long running command, which brings us to another important point.
@@ -1954,12 +2130,14 @@ running), but is also a very good way of quickly running interactive commands
 in the container. Because we're using Node.js inside our container to run the
 listening HTTP server, we can use interactive mode to get a psuedo terminal into
 the Node.js interpreter. Run the following:
-```
+
+```shell
 $ docker run --interactive --tty --publish "9854:9854" simple-docker-app /usr/local/bin/node
 Welcome to Node.js v13.9.0.
 Type ".help" for more information.
 >
 ```
+
 As you can see, we've now been able to gain a TTY into the Node.js process.
 Feel free to run some JavaScript statements in it, and when you've finished
 hit `Ctrl+C` twice to exit the interpreter. This will finish the interactive
@@ -1971,14 +2149,17 @@ distribution of one kind or another. Our particular image was built using Debian
 Buster as its base. Because of this, we can very easily use the inbuilt `bash`
 shell to get a TTY connection into the container and run it as if we were just
 using another installation of Debian:
-```
+
+```shell
 $ docker run --interactive --tty --publish "9854:9854" simple-docker-app /bin/bash
 root@30e19e9a868b:/usr/src/app#
 ```
+
 Again, because we overrode the default command, the HTTP server isn't listening,
 but because we've started an interactive container session using the shell,
 we can actually easily run it:
-```
+
+```shell
 root@30e19e9a868b:/usr/src/app# npm start
 
 > simple-docker-app@1.0.0 start /usr/src/app
@@ -1986,6 +2167,7 @@ root@30e19e9a868b:/usr/src/app# npm start
 
 Echo server is up and listening...
 ```
+
 If you now sent a `curl` command to the HTTP server, it would respond
 appropriately.
 
@@ -2005,19 +2187,24 @@ sending a command parameter to `docker run`, except that it does this on already
 running containers.
 
 To demonstrate, run a container in detached mode to start the HTTP server:
-```
+
+```shell
 $ docker run --detach --publish "9854:9854" simple-docker-app
 6c4e438ffa43683d7cb8a9f52ba72c4ec874acd11cd5842ae34cba8243c3c527
 ```
+
 As we're running in detached mode, we can now send a `curl` command to prove
 the HTTP server is listening:
-```
+
+```shell
 $ curl -XPOST http://localhost:9854/echo -H 'Content-type: text/plain' -d 'Running echo!'
 Running echo!
 ```
+
 As we have the ID of the running container, we can now execute a command using
 `docker exec` (obviously change the container ID appropriately):
-```
+
+```shell
 $ docker exec --interactive --tty 6c4e438ffa43683d7cb8a9f52ba72c4ec874acd11cd5842ae34cba8243c3c527 /bin/bash
 root@6c4e438ffa43:/usr/src/app# # ps -ae
   PID TTY          TIME CMD
@@ -2027,11 +2214,13 @@ root@6c4e438ffa43:/usr/src/app# # ps -ae
    42 pts/0    00:00:00 bash
    48 pts/0    00:00:00 ps
 ```
+
 We now have a bash shell into the container and as we can see, the `npm start`
 from the `CMD` in the Dockerfile is running correctly as PID 1.
 
 Finally stop the container:
-```
+
+```shell
 $ docker stop 6c4e438ffa43683d7cb8a9f52ba72c4ec874acd11cd5842ae34cba8243c3c527
 ```
 
@@ -2085,7 +2274,8 @@ Let's carry out a quick example of this. We'll use the
 to an already existing directory structure. Run the following in the terminal
 to change to the bind-mounts-and-volumes and start running a new container which
 we'll connect a psuedo terminal to:
-```
+
+```shell
 $ cd $BALENA_DOCKER_MASTERCLASS/bind-mounts-and-volumes
 $ docker run --interactive --tty --mount type=bind,source="${BALENA_DOCKER_MASTERCLASS}"/bind-mounts-and-volumes/bind-directory,destination=/bound-mount simple-docker-app /bin/bash
 root@ce0c2aa62101:/usr/src/app# cat /bound-mount/testfile.txt
@@ -2097,6 +2287,7 @@ bind-mounts-and-volumes heds$ cat bind-directory/testfile.txt
 This is a bound file!
 This was added from the container!
 ```
+
 Here we ran a new container instance, bound a local directory
 (`/bind-mounts-and-volumes/bind-directory`) which contained a file into it,
 started an interactive psuedo terminal, printed the contents of the file to
@@ -2130,36 +2321,43 @@ For these exercises, we're just going to use a local filesystem volume.
 Volumes, if not pre-existing, are created when a new container that it is
 bound is created or started. However, we'll go into a little more detail and
 create one ourselves:
-```
+
+```shell
 $ docker volume create my-volume
 my-volume
 ```
+
 We've created a volume with the name `my-volume`. Now we can attach it to a
 new container:
-```
+
+```shell
 $ docker run --interactive --tty --mount type=volume,source=my-volume,destination=/data-volume simple-docker-app /bin/bash
 root@a3d4665bc8b1:/usr/src/app# echo "Data in my-volume!" > /data-volume/newfile.txt
 root@a3d4665bc8b1:/usr/src/app# exit
 ```
+
 Note that we've again used the `--mount` parameter to mount the volume into the
 container, but this time we've change the `type` to `volume`. The container ran
 and a new file was created with some text in the volume.
 
 We'll now run a new container, using a different image, and mount the same
 volume that we created:
-```
+
+```shell
 $ docker run --interactive --tty --mount type=volume,source=my-volume,destination=/modified-data-volume balenalib/intel-nuc-debian-node  /bin/bash
 root@ab2ad1db1bce:/# cat /modified-data-volume/newfile.txt
 Data in my-volume!
 root@ab2ad1db1bce:/# exit
 exit
 ```
+
 As we can see, the data in the volume has persisted.
 
 Because the volume is just another Docker object, we're actually able to inspect
 it via the command line with
 [`docker volume inspect`](https://docs.docker.com/engine/reference/commandline/volume_inspect/):
-```
+
+```shell
 $ docker volume inspect my-volume
 [
     {
@@ -2173,6 +2371,7 @@ $ docker volume inspect my-volume
     }
 ]
 ```
+
 The `Mountpoint` actually shows that the volume is created in the Docker storage
 heirarchy, and if we were to inspect the
 `/var/lib/docker/volumes/my-volume/_data` directory, we'd find the `newfile.txt`
@@ -2181,7 +2380,8 @@ file.
 You can list the current volumes known by Docker with
 [`docker volume ls`](https://docs.docker.com/engine/reference/commandline/volume_ls/)
 , which we'll try now:
-```
+
+```shell
 $ docker volume ls
 DRIVER              VOLUME NAME
 local               my-volume
@@ -2190,10 +2390,12 @@ local               my-volume
 Finally, let's remove the volume to tidy up, we use
 [`docker volume rm`](https://docs.docker.com/engine/reference/commandline/volume_rm/)
 to do this:
-```
+
+```shell
 $ docker volume rm my-volume
 Error response from daemon: remove my-volume: volume is in use - [a3d4665bc8b16aa7df75faefd1edfef0517015cb506a200f9bb29a00132167f0, ab2ad1db1bce61e632b6bea51d65d5febc1a814d07e1ebd4350d8dcca5cecf5c]
 ```
+
 But as you can see, we're first warned that the volume we're using is already
 in use! This is because we've previously attached it to a container that's only
 been stopped and not removed.
@@ -2202,7 +2404,8 @@ Because we actually attached the same volume to two different containers, we
 need to remove both of those containers before we can remove the volume. The
 removal command actually told us which containers are using the volume, so
 we can simply remove them first:
-```
+
+```shell
 $ docker rm a3d4665bc8b16aa7df75faefd1edfef0517015cb506a200f9bb29a00132167f0 ab2ad1db1bce61e632b6bea51d65d5febc1a814d07e1ebd4350d8dcca5cecf5c
 a3d4665bc8b16aa7df75faefd1edfef0517015cb506a200f9bb29a00132167f0
 ab2ad1db1bce61e632b6bea51d65d5febc1a814d07e1ebd4350d8dcca5cecf5c
@@ -2232,7 +2435,8 @@ Docker for macOS, because the processes running will actually occur under the
 VM and *not* the host OS). The following command will run the Docker container
 for 60 seconds (whilst it sleeps) before exiting, and whilst it sleeps we'll
 have a look at the process running:
-```
+
+```shell
 $ whoami
 heds
 $ docker run --detach simple-docker-app sleep 60
@@ -2240,6 +2444,7 @@ $ docker run --detach simple-docker-app sleep 60
 $ ps aux | grep "[s]leep"
 root      9384 18.0  0.0   4052   748 ?        Ss   23:26   0:00 /bin/sleep 60
 ```
+
 The first line carries out a `whoami` to print the current user of the host OS,
 the second starts our detached running container and the third searches the
 host's process list for a command running `sleep`. This final command finds the
@@ -2267,13 +2472,15 @@ Let's have a look at a quick example of running a command in a container. Pretty
 much any Linux distribution allows you (as the `root` user) to mount a
 filesystem, and as we've already discovered, processes inside our container are
 running as root. So let's mount a `tmpfs` filesystem into `/mnt/tmp`:
-```
+
+```shell
 $ docker run --interactive --tty simple-docker-app /bin/bash -c 'mkdir /mnt/tmp \
   && mount -t tmpfs none /mnt/tmp \
   && echo "Temp file!" > /mnt/tmp/newfile.txt \
   && cat /mnt/tmp/newfile.txt'
 mount: /mnt/tmp: permission denied.
 ```
+
 So even though the `root` user is trying to run the command to mount a `tmpfs`
 filesystem inside the container, it's been denied permission. This answers
 our previous question of why running container processes as `root` is not
@@ -2352,13 +2559,15 @@ a container we need the `CAP_SYS_ADMIN` capability feature (which also enables a
 large number of other capabilites for container processes). To enable this,
 we'll use the `--cap-add` (for capability add) switch when executing
 `docker run`:
-```
+
+```shell
 $ docker run --interactive --tty --cap-add SYS_ADMIN simple-docker-app /bin/bash -c 'mkdir /mnt/tmp \
   && mount -t tmpfs none /mnt/tmp \
   && echo "Temp file!" > /mnt/tmp/newfile.txt \
   && cat /mnt/tmp/newfile.txt'
 Temp file!
 ```
+
 This time it worked correctly, because we eased the restriction on the container
 to allow the `CAP_SYS_ADMIN` capability. Note that when passing the capability,
 the `CAP_` prefix is dropped.
@@ -2376,7 +2585,8 @@ carried out development on.
 
 We've already seen the local registry, it's the store for images, the list of
 which can be seen by running the following command:
-```
+
+```shell
 $ docker images
 REPOSITORY                        TAG                 IMAGE ID            CREATED             SIZE
 simple-docker-app                 latest              b8a722866d8c        3 days ago          273MB
@@ -2384,13 +2594,16 @@ simple-docker-app                 v0.0.2              5e2c8c1cb9d9        5 days
 simple-docker-app                 v0.0.1              8a65ba22f11f        6 days ago          273MB
 balenalib/intel-nuc-debian-node   latest              ca37795ac1cc        2 weeks ago         270MB
 ```
+
 This local repository stores all of the images that have been built or used
 when building the images. But how do we now share these images, so that others
 can use them? Well, think back to our Dockerfile, specifically the first line
 where we determined which base image to use:
-```
+
+```dockerfile
 FROM balenalib/intel-nuc-debian-node:latest
 ```
+
 As we know, this tells Docker which image to base the rest of the image we're
 building on. As you may also remember, on the first build, this downloaded the
 image. This download came from a remote Docker registry, which Docker itself
@@ -2431,20 +2644,23 @@ assume the user is called `dockerhub` so remember to replace this name with the
 actual username (also called a Docker ID) you signed up with.
 
 Next ensure that you login to the default Docker registry (Docker Hub), using:
-```
+
+```shell
 $ docker login
 Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
 Username: dockerhub
 Password:
 Login Succeeded
 ```
+
 First of all, there's the matter of naming our Docker image. When we built it,
 we called it `simple-docker-app`. This isn't suitable for pushing to Docker Hub
 however, because that name isn't prefixed by the name of the user who will own
 the repository on Docker Hub. We'll quickly demonstrate this by using the
 [`docker push`](https://docs.docker.com/engine/reference/commandline/push/)
 command, which is used to push repository images to a registry:
-```
+
+```shell
 $ docker push simple-docker-app:latest
 The push refers to repository [docker.io/library/simple-docker-app]
 d1584e117f97: Preparing
@@ -2463,6 +2679,7 @@ f8cad89c2502: Waiting
 f2cb0ecef392: Waiting
 denied: requested access to the resource is denied
 ```
+
 As you can see, we don't have access to the toplevel repository because we
 don't own it.
 
@@ -2471,7 +2688,8 @@ by us by creating a new tag for the repository to include our username. We'll be
 pushing the `latest` version of the image we built, so we'll use
 [`docker tag`](https://docs.docker.com/engine/reference/commandline/tag/)
 to tag that:
-```
+
+```shell
 $ docker tag simple-docker-app:latest dockerhub/simple-docker-app:latest
 $ docker images
 REPOSITORY                        TAG                 IMAGE ID            CREATED             SIZE
@@ -2481,12 +2699,14 @@ simple-docker-app                 v0.0.2              5e2c8c1cb9d9        6 days
 simple-docker-app                 v0.0.1              8a65ba22f11f        6 days ago          273MB
 balenalib/intel-nuc-debian-node   latest              ca37795ac1cc        2 weeks ago         270MB
 ```
+
 Note that when tagging you can use the name of the repository to create a new
 tag for, or use the image ID.
 
 We now have a repository called `dockerhub/simple-docker-app` which has a single
 version tag of `latest`. We'll try pushing this again:
-```
+
+```shell
 $ docker push dockerhub/simple-docker-app:latest
 The push refers to repository [docker.io/dockerhub/simple-docker-app]
 d1584e117f97: Pushed
@@ -2505,13 +2725,15 @@ f8cad89c2502: Pushed
 f2cb0ecef392: Pushed
 latest: digest: sha256:eaf4f3d25964c6d56e4dec4fac93212d2fd315474a8040c00189bae46eded30d size: 3246
 ```
+
 Success! If you now look at the Docker Hub site in your web browser and go to
 the `My Profile` section of your user account, you'll notice that the image has
 been stored on Docker Hub in the `simple-docker-app` repository owned by you.
 
 Because we've carried out versioning with the tags, we can also add a new tag
 to a previous version and then push that:
-```
+
+```shell
 $ docker tag simple-docker-app:v0.0.2 whaleway/simple-docker-app:v0.0.2
 $ docker push dockerhub/simple-docker-app:v0.0.2
 The push refers to repository [docker.io/dockerhub/simple-docker-app]
@@ -2530,6 +2752,7 @@ f8cad89c2502: Layer already exists
 f2cb0ecef392: Layer already exists
 v0.0.2: digest: sha256:c82f1c64bbdd86fdeba44de5393f0af6e9271ac9cbad8a626c320e61b29dbe64 size: 3039
 ```
+
 Note the message `Layer already exists`. Because the repository we pushed to
 already has an image (`dockerhub/simple-docker-app:latest`), Docker noted that
 our latest push used several of the same layers for its image. Because of this,
@@ -2539,9 +2762,11 @@ example of how the use of layers saves space.
 We've created new tags for our images here to push them to Docker Hub, but
 usually you'll build an image with the user (owner name) directly so that
 tagging doesn't have to take place before pushing, for example:
-```
+
+```shell
 $ docker build -t dockerhub/simple-docker-app:latest .
 ```
+
 If you again look at the profile for your user account and select the
 `dockerhub/simple-docker-app` repository, this will take you to a page for that
 specific repository (you can manage your repository here using
