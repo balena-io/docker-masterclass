@@ -35,7 +35,7 @@ how containers (and other components) function and are constructed.
 It is anticipated that after reading the basic sections of this Masterclass,
 the reading of the
 [Services Masterclass](https://github.com/balena-io/services-masterclass)
-will allow anybody to develop balena applications and services.
+will allow anybody to develop balena apps and services.
 
 ## Hardware and Software Requirements
 
