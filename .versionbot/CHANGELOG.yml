@@ -1,0 +1,78 @@
+- commits:
+    - subject: "patch: Create flowzone.yml"
+      hash: f71da7f5221a4c646c2ab3dbc4f3e59c96a2d949
+      body: ""
+      footer: {}
+      author: Vipul Gupta
+  version: 1.0.7
+  title: ""
+  date: 2023-12-20T16:07:06.262Z
+- version: 1.0.6
+  date: 2021-08-10T12:52:12Z
+  commits:
+    - hash: 7078b511bb50b79187b2d7457d4d710843c283fc
+      author: Tomás Migone
+      footers:
+        change-type: patch
+        signed-off-by: Tomás Migone <tomas@balena.io>
+      subject: Rename applications to fleets/apps
+      body: ""
+- version: 1.0.5
+  date: 2021-07-01T11:05:45Z
+  commits:
+    - hash: e58692909a5eff9bb5189c7eac4a73884f360531
+      author: dfunckt
+      footers:
+        change-type: patch
+      subject: Delete .github directory
+      body: ""
+- version: 1.0.4
+  date: 2020-05-08T19:34:40Z
+  commits:
+    - hash: 63099b7da65c6b599404eea2b814084b28277ba0
+      author: Gareth Davies
+      footers:
+        change-type: patch
+        signed-off-by: Gareth Davies <gareth@balena.io>
+      subject: Removing Gareth from codeowners
+      body: ""
+- version: 1.0.3
+  date: 2020-04-20T20:04:33Z
+  commits:
+    - hash: 6e9e3e95c90c7b5540c2c46c3a423e8958db7599
+      author: Matthew McGinn
+      footers:
+        change-type: patch
+        signed-off-by: Matthew McGinn <matthew@balena.io>
+      subject: remove hedss as codeowner
+      body: ""
+- version: 1.0.2
+  date: 2020-04-08T03:44:57Z
+  commits:
+    - hash: 565b979d4d63ad732d1e5e46a6933e549d1400ed
+      author: Gareth Davies
+      footers:
+        change-type: patch
+        signed-off-by: Gareth Davies <gareth@balena.io>
+      subject: Adding fenced code block languages for formatting
+      body: ""
+- version: 1.0.1
+  date: 2020-04-03T23:35:53Z
+  commits:
+    - hash: c489668f9a45d9cf19996398a0fd7359af2cd63b
+      author: Gareth Davies
+      footers:
+        change-type: patch
+        signed-off-by: Gareth Davies <hello@garethtdavies.com>
+      subject: Update from English to American spelling
+      body: ""
+- version: 1.0.0
+  date: 2020-04-03T21:55:13Z
+  commits:
+    - hash: 416662eff2a577cbf8fb92b6f5db61d938b379ce
+      author: Heds Simons
+      footers:
+        change-type: major
+        signed-off-by: Heds Simons <heds@balena.io>
+      subject: "all: Initial PR for Docker Masterclass"
+      body: Intial Docker Masterclass.

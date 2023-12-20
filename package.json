@@ -1,6 +1,6 @@
 {
   "name": "balena-masterclass-skeleton",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Forkable skeleton for balena masterclasses",
   "scripts": {
     "test": "echo \"There are no tests for this repository\" && exit 0"
@@ -17,6 +17,6 @@
   "homepage": "https://github.com/balena-io/balena-masterclass-skeleton#readme",
   "private": true,
   "versionist": {
-    "publishedAt": "2021-08-09T15:04:40.133Z"
+    "publishedAt": "2023-12-20T16:07:06.312Z"
   }
 }
